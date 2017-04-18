@@ -50,13 +50,11 @@ const int WEBSOCKET_THREADS_DEFAULT = 10;
 class configuration_exception : public std::exception
 {
 public:
-  configuration_exception (std::string message)
-  {
+  configuration_exception (std::string message) {
     this->message = message;
   }
 
-  virtual const char *what() const _GLIBCXX_USE_NOEXCEPT
-  {
+  virtual const char *what() const _GLIBCXX_USE_NOEXCEPT {
     return message.c_str();
   }
 
@@ -187,8 +185,7 @@ WebSocketTransport::WebSocketTransport (const boost::property_tree::ptree
           }) );
           context->use_certificate_chain_file (certificateFile.string() );
           context->use_private_key_file (certificateFile.string(), boost::asio::ssl::context::pem);
-        } catch (std::exception &e)
-        {
+        } catch (std::exception &e) {
           GST_ERROR ("Error while setting up tls %s", e.what() );
         }
 
@@ -442,6 +439,7 @@ void WebSocketTransport::openHandler (ServerType *s,
   std::string resource = connection->get_resource();
 
   GST_DEBUG ("Client connected from %s", connection->get_origin().c_str() );
+  GST_DEBUG ("### wow");
 
   if (resource.size() >= 1 && resource[0] == '/') {
     resource = resource.substr (1);
@@ -492,16 +490,35 @@ WebSocketTransport::processSubscription (std::shared_ptr< MediaObjectImpl > obj,
 
 void WebSocketTransport::closeHandler (websocketpp::connection_hdl hdl)
 {
-  GST_DEBUG ("Connection closed");
+  bool isSessionAlive;
+  GST_DEBUG ("WebSocketTransport::closeHandler() ; connection closed");
 
   try {
     std::unique_lock<std::recursive_mutex> lock (mutex);
     std::string sessionId = connectionsReverse.at (hdl);
 
-    GST_DEBUG ("Erasing connection associated with: %s", sessionId.c_str() );
-    connections.erase (sessionId);
-    connectionsReverse.erase (hdl);
-    secureConnections.erase (sessionId);
+    /* lunker:: session keepalive from websocket disconnected */
+    isSessionAlive = MediaSet::getMediaSet()->isSessionAlive (sessionId);
+
+    if (isSessionAlive) {
+      GST_DEBUG ("### isSessionAlive : true");
+      // still exist alive Media Element,
+      // keep session alive
+      GST_ERROR ("Still contain alive media element in  connection : %s",
+                 sessionId.c_str() );
+
+    } else {
+      GST_DEBUG ("### isSessionAlive : false");
+      // no alive media element
+      // do session invalidate
+
+      GST_ERROR ("Erasing connection associated with: %s", sessionId.c_str() );
+      connections.erase (sessionId);
+      connectionsReverse.erase (hdl);
+      secureConnections.erase (sessionId);
+
+    } // end else
+
   } catch (std::out_of_range &e) {
     /* Ignore */
   }

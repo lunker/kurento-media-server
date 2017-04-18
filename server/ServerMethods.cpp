@@ -602,9 +602,12 @@ ServerMethods::connect (const Json::Value &params, Json::Value &response)
   std::string sessionId;
 
   if (params == Json::Value::null) {
+    GST_DEBUG ("### ServerMethod::connect() :: no sessionId");
     sessionId = generateUUID ();
   } else {
     bool doKeepAlive = false;
+
+    GST_DEBUG ("### ServerMethod::connect() :: sessionId");
 
     doKeepAlive = getOrCreateSessionId (sessionId, params);
 

@@ -41,6 +41,9 @@ WebSocketRegistrar::WebSocketRegistrar (const std::string &registrarAddress,
   registrarAddress (registrarAddress)
 {
   GST_INFO ("Registrar will be performed to: %s", registrarAddress.c_str () );
+  GST_ERROR ("### registrar address %s", registrarAddress.c_str() );
+  GST_ERROR ("### local address %s", localAddress.c_str() );
+
 }
 
 WebSocketRegistrar::~WebSocketRegistrar ()
@@ -134,8 +137,7 @@ WebSocketRegistrar::connectRegistrar ()
           ctx->set_options (boost::asio::ssl::context::default_workarounds |
           boost::asio::ssl::context::no_sslv2 |
           boost::asio::ssl::context::single_dh_use);
-        } catch (std::exception &e)
-        {
+        } catch (std::exception &e) {
           GST_ERROR ("Error setting tls on registrar connection: %s", e.what() );
         }
 
@@ -191,8 +193,9 @@ WebSocketRegistrar::connectRegistrar ()
       break;
     }
 
-    GST_INFO ("Registrar disconnected, trying to reconnect in %" G_GINT64_FORMAT
-              " ms", waitTime.count () );
+    GST_ERROR ("### wowowwowowow");
+    GST_ERROR ("Registrar disconnected, trying to reconnect in %" G_GINT64_FORMAT
+               " ms", waitTime.count () );
 
     std::unique_lock<std::mutex> lock (mutex);
     cond.wait_for (lock, waitTime);
