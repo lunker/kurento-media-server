@@ -603,10 +603,13 @@ ServerMethods::connect (const Json::Value &params, Json::Value &response)
 
   if (params == Json::Value::null) {
     sessionId = generateUUID ();
+    GST_DEBUG ("### ServerMethod::connect() :: no sessionId");
   } else {
-    bool doKeepAlive = false;
+    GST_DEBUG ("### ServerMethod::connect() :: sessionId");
 
+    bool doKeepAlive = false;
     doKeepAlive = getOrCreateSessionId (sessionId, params);
+
 
     if (doKeepAlive) {
       try {
